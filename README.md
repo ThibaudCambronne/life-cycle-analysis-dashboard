@@ -16,4 +16,4 @@ This analyzes **4 phases**: 🛠️ Material, 🏭 Processing, 🚚 Transport, �
 # Installation
 run `pip install -r requirements.txt`
 
-To run the dshboard, open a terminal and run: `streamlit run main.py`
+To run the app locally, open a terminal and run: `streamlit run main.py`
