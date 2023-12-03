@@ -1,4 +1,14 @@
 def compute_material_impact(dict_data_customers, df_database):
+    """Compute the impact of the materials
+
+    Args:
+        dict_data_customers (dict): dict with the data from the customers
+        df_database (pandas.DataFrame): dataframe with the impact of the materials
+
+    Returns:
+        dict: dict with the impact of the materials in the format:
+            {material_name_1: {impact_name_1: impact_value, impact_name_2: impact_value, ...}}
+    """
     dict_impact_material = {}
 
     for i in range(len(dict_data_customers["Materiaux"])):
@@ -105,6 +115,8 @@ def get_trip_index(dict_with_info, str_a, str_b):
 
 
 def get_distance_trip(country_from, counrty_to, transportation_mean):
+    """Get the distance of a trip from the distance_trips dict (defined above as a global variable)
+    for plane trips, the distance is divided by 2"""
     distance = get_trip_index(distance_trips, country_from, counrty_to)
     
     if transportation_mean == "plane":
@@ -113,6 +125,12 @@ def get_distance_trip(country_from, counrty_to, transportation_mean):
 
 
 def compute_distance_single_transport(country_from, counrty_to, transportation_mean):
+    """Compute the distance for a single trip. A trip from country A to country B can be done in 3 steps:
+        - within A with a truck (to go from the production site to the harbor for example)
+        - from A to B with a transportation mean
+        - within B with a truck (to go from the harbor to the customer for example)
+    """
+
     dict_distance_transport = {i: 0 for i in ["train", "truck", "plane", "boat"]}
 
     # create the list of trips to do
@@ -145,7 +163,6 @@ def compute_tkm_transportation(dict_data_customers):
         # get the transportation mean
         try:
             transportation_mean = get_trip_index(dict_data_customers["Moyen de transport"], country_from, country_to)
-            print("here", transportation_mean)
         except KeyError:
             transportation_mean = "truck"
 
