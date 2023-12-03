@@ -11,6 +11,8 @@ For instance:
 This analyzes **4 phases**: 🛠️ Material, 🏭 Processing, 🚚 Transport, 🏠 Use-Phase and computes **3 impacts**: ☁️ climate change impact, ☢️ ionising radiations, and 🪨 depletion of abiotic resources. :link:[More info.](https://ecochain.com/blog/impact-categories-lca/).
 
 
+Usefull link to compare the total impact in µPt of different products :link:[here](https://agribalyse.ademe.fr/app).
+
 *Made in collaboration with :link:[Holis](https://holis.earth/) 🌟*
 
 # Installation
