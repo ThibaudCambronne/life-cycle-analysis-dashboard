@@ -19,11 +19,14 @@ def compute_material_impact(dict_data_customers, df_database):
             if col != "Unit":
                 try:
                     dict_impact_material[material_name][col] = (
-                        df_database.loc[material_name, col] * dict_data_customers["Materiaux"][i]["Masse utile (kg)"]
+                        df_database.loc[material_name, col]
+                        * dict_data_customers["Materiaux"][i]["Masse utile (kg)"]
                     )
-                    
+
                 except KeyError:
-                    print(f"Warning: {col} emissions fo material {material_name} not found in the database (defaulted to 0)")
+                    print(
+                        f"Warning: {col} emissions fo material {material_name} not found in the database (defaulted to 0)"
+                    )
                     dict_impact_material[material_name][col] = 0
 
     return dict_impact_material
@@ -32,21 +35,23 @@ def compute_material_impact(dict_data_customers, df_database):
 def compute_impact_processing(dict_data_customers, df_database):
     dict_link_electricity_country_to_database = {
         "France": "Mix électrique réseau, FR",
-        "Chine": "Mix électrique réseau, CN"
+        "Chine": "Mix électrique réseau, CN",
     }
 
     dict_impact_processing = {}
-    processing_electricity = dict_data_customers["Processing"]["Consommation d'energie (kWh)"]
+    processing_electricity = dict_data_customers["Processing"][
+        "Consommation d'energie (kWh)"
+    ]
     processing_country = dict_data_customers["Processing"]["Lieu d'assemblage"]
 
     for col in df_database.columns:
         if col != "Unit":
             dict_impact_processing[col] = (
                 df_database.loc[
-                    dict_link_electricity_country_to_database[processing_country], col] * 
-                    processing_electricity
+                    dict_link_electricity_country_to_database[processing_country], col
+                ]
+                * processing_electricity
             )
-                
 
     return dict_impact_processing
 
@@ -54,17 +59,17 @@ def compute_impact_processing(dict_data_customers, df_database):
 def compute_impact_use_phase(dict_data_customers, df_database):
     dict_link_electricity_country_to_database = {
         "France": "Mix électrique réseau, FR",
-        "Chine": "Mix électrique réseau, CN"
+        "Chine": "Mix électrique réseau, CN",
     }
 
     dict_impact_use_phase = {}
     use_phase_electricity_kw = (
-        dict_data_customers["Usage"]["Duree de vie (annees)"] * 
-        dict_data_customers["Usage"]["Nombre de cycles par an"] * 
-        dict_data_customers["Usage"]["Puisance (W)"] * 
-        dict_data_customers["Usage"]["Duree de cycle (min)"] 
-        / 60 # convert minutes to hours
-        / 1000 # convert W to kW
+        dict_data_customers["Usage"]["Duree de vie (annees)"]
+        * dict_data_customers["Usage"]["Nombre de cycles par an"]
+        * dict_data_customers["Usage"]["Puisance (W)"]
+        * dict_data_customers["Usage"]["Duree de cycle (min)"]
+        / 60  # convert minutes to hours
+        / 1000  # convert W to kW
     )
     use_phase_country = dict_data_customers["Usage"]["Lieu d'utilisation"]
 
@@ -73,9 +78,9 @@ def compute_impact_use_phase(dict_data_customers, df_database):
             dict_impact_use_phase[col] = (
                 df_database.loc[
                     dict_link_electricity_country_to_database[use_phase_country], col
-                    ] * use_phase_electricity_kw
+                ]
+                * use_phase_electricity_kw
             )
-                
 
     return dict_impact_use_phase
 
@@ -88,7 +93,7 @@ distance_trips = {
     "France - Taiwan": 18075,
     "Chine - Taiwan": 850,
     "Chine - Chine": 1900,
-    "Taiwan - Taiwan": 600
+    "Taiwan - Taiwan": 600,
 }
 
 
@@ -109,8 +114,10 @@ def get_trip_index(dict_with_info, str_a, str_b):
         try:
             info = dict_with_info[f"{str_b} - {str_a}"]
         except KeyError:
-            raise KeyError(f"Warning: distance for trip {str_a} - {str_b} not found in the database")
-    
+            raise KeyError(
+                f"Warning: distance for trip {str_a} - {str_b} not found in the database"
+            )
+
     return info
 
 
@@ -118,7 +125,7 @@ def get_distance_trip(country_from, counrty_to, transportation_mean):
     """Get the distance of a trip from the distance_trips dict (defined above as a global variable)
     for plane trips, the distance is divided by 2"""
     distance = get_trip_index(distance_trips, country_from, counrty_to)
-    
+
     if transportation_mean == "plane":
         distance /= 2
     return distance
@@ -126,9 +133,9 @@ def get_distance_trip(country_from, counrty_to, transportation_mean):
 
 def compute_distance_single_transport(country_from, counrty_to, transportation_mean):
     """Compute the distance for a single trip. A trip from country A to country B can be done in 3 steps:
-        - within A with a truck (to go from the production site to the harbor for example)
-        - from A to B with a transportation mean
-        - within B with a truck (to go from the harbor to the customer for example)
+    - within A with a truck (to go from the production site to the harbor for example)
+    - from A to B with a transportation mean
+    - within B with a truck (to go from the harbor to the customer for example)
     """
 
     dict_distance_transport = {i: 0 for i in ["train", "truck", "plane", "boat"]}
@@ -140,14 +147,16 @@ def compute_distance_single_transport(country_from, counrty_to, transportation_m
         list_trips = [
             (country_from, country_from, "truck"),
             (country_from, counrty_to, transportation_mean),
-            (counrty_to, counrty_to, "truck")
+            (counrty_to, counrty_to, "truck"),
         ]
-    
+
     for trip in list_trips:
         trip_from = trip[0]
         trip_to = trip[1]
         trip_transportation_mean = trip[2]
-        dict_distance_transport[trip_transportation_mean] += get_distance_trip(trip_from, trip_to, trip_transportation_mean)
+        dict_distance_transport[trip_transportation_mean] += get_distance_trip(
+            trip_from, trip_to, trip_transportation_mean
+        )
 
     return dict_distance_transport
 
@@ -156,50 +165,56 @@ def compute_tkm_transportation(dict_data_customers):
     dict_tkm_transport = {i: 0 for i in ["train", "truck", "plane", "boat"]}
 
     for i in range(len(dict_data_customers["Materiaux"])):
-        raw_mass = dict_data_customers["Materiaux"][i]["Masse utile (kg)"] # in kg, before processing losses
+        raw_mass = dict_data_customers["Materiaux"][i][
+            "Masse utile (kg)"
+        ]  # in kg, before processing losses
         country_from = dict_data_customers["Materiaux"][i]["Lieu de production"]
         country_to = dict_data_customers["Processing"]["Lieu d'assemblage"]
-        
+
         # get the transportation mean
         try:
-            transportation_mean = get_trip_index(dict_data_customers["Moyen de transport"], country_from, country_to)
+            transportation_mean = get_trip_index(
+                dict_data_customers["Moyen de transport"], country_from, country_to
+            )
         except KeyError:
             transportation_mean = "truck"
 
         dict_distance_transport_material = compute_distance_single_transport(
-            country_from,
-            country_to,
-            transportation_mean
+            country_from, country_to, transportation_mean
         )
 
         # Convert the distances to tkm
         for transportation_mean in dict_distance_transport_material.keys():
             dict_tkm_transport[transportation_mean] += (
-                dict_distance_transport_material[transportation_mean] *
-                raw_mass / 1000 # convert kg to t
+                dict_distance_transport_material[transportation_mean]
+                * raw_mass
+                / 1000  # convert kg to t
             )
-    
+
     # add the transportation for the processing
     country_from = dict_data_customers["Processing"]["Lieu d'assemblage"]
     country_to = dict_data_customers["Usage"]["Lieu d'utilisation"]
     # get the transportation mean between the two countries
     try:
-        transportation_mean = get_trip_index(dict_data_customers["Moyen de transport"], country_from, country_to)
+        transportation_mean = get_trip_index(
+            dict_data_customers["Moyen de transport"], country_from, country_to
+        )
     except KeyError:
         transportation_mean = "truck"
 
     dict_distance_transport_processing = compute_distance_single_transport(
-        country_from,
-        country_to,
-        "truck"
+        country_from, country_to, "truck"
     )
-    mass_end_product = sum([i["Masse produit fini (kg)"] for i in dict_data_customers["Materiaux"]])
+    mass_end_product = sum(
+        [i["Masse produit fini (kg)"] for i in dict_data_customers["Materiaux"]]
+    )
 
     # Convert the distances to tkm
     for transportation_mean in dict_distance_transport_processing.keys():
         dict_tkm_transport[transportation_mean] += (
-            dict_distance_transport_processing[transportation_mean] *
-            mass_end_product / 1000 # convert kg to t
+            dict_distance_transport_processing[transportation_mean]
+            * mass_end_product
+            / 1000  # convert kg to t
         )
 
     return dict_tkm_transport
@@ -211,9 +226,10 @@ def compute_impact_transportation(dict_data_customers, df_database):
     dict_tkm_transport = compute_tkm_transportation(dict_data_customers)
 
     for col in dict_impact_transportation.keys():
-            for transportation_mean in dict_tkm_transport.keys():
-                dict_impact_transportation[col] += (
-                    df_database.loc[transportation_mean, col] * dict_tkm_transport[transportation_mean]
-                )
-    
+        for transportation_mean in dict_tkm_transport.keys():
+            dict_impact_transportation[col] += (
+                df_database.loc[transportation_mean, col]
+                * dict_tkm_transport[transportation_mean]
+            )
+
     return dict_impact_transportation
