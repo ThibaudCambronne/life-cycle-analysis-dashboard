@@ -1,5 +1,5 @@
 # Interactive Dashboard for the Life Cycle Analysis of a Microwave
-This app is a demo of an interactive dashboard to compute the life cycle analysis of a microwave.
+This app is a demo of an interactive dashboard to compute the life cycle analysis of a microwave. Link to the app :link:[here](https://life-cycle-analysis-microwave.streamlit.app/)
 
 You can play with the different parameters to see how they impact the overall impact of the microwave. 
 For instance:   
