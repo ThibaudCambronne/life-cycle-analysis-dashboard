@@ -8,7 +8,7 @@ import lca_calculations
 
 # set the page config (here the title, the tab icon and the layout)
 st.set_page_config(
-    page_title="lca-microwave",
+    page_title="LCA Microwave",
     page_icon=":seedling:",
     layout="wide",
     initial_sidebar_state="expanded",
